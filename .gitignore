@@ -1,0 +1,10 @@
+*.pyc
+__pycache__/
+*.sqlite3
+media/
+logs/
+cert.pem
+key.pem
+.venv/
+env/
+*.env
