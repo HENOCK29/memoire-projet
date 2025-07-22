@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Tableau de bord Administrateur{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Tableau de bord Administrateur</h1>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#etudiants">Étudiants</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#cours">Cours</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#presences">Présences</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#seances">Séances</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#stats">Statistiques</a>
+        </li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="etudiants">
+            <h2>Liste des Étudiants</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Matricule</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for etudiant in etudiants %}
+                        <tr>
+                            <td>{{ etudiant.nom }}</td>
+                            <td>{{ etudiant.prenom }}</td>
+                            <td>{{ etudiant.matricule }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="tab-pane fade" id="cours">
+            <h2>Liste des Cours</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Code</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cours in cours %}
+                        <tr>
+                            <td>{{ cours.nom }}</td>
+                            <td>{{ cours.code }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="tab-pane fade" id="presences">
+            <h2>Présences en temps réel</h2>
+            <div class="mb-3">
+                <a href="{% url 'admin_export_csv' %}" class="btn btn-primary">Exporter toutes les présences (CSV)</a>
+                <form action="{% url 'admin_export_csv' %}" method="get" class="d-inline">
+                    <select name="cours_id" class="form-select d-inline w-auto">
+                        <option value="">Tous les cours</option>
+                        {% for cours in cours %}
+                            <option value="{{ cours.id }}">{{ cours.nom }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="date" name="date" class="form-control d-inline w-auto">
+                    <button type="submit" class="btn btn-secondary">Exporter filtré (CSV)</button>
+                </form>
+            </div>
+            <table class="table table-striped" id="presences-table">
+                <thead>
+                    <tr>
+                        <th>Étudiant</th>
+                        <th>Cours</th>
+                        <th>Date</th>
+                        <th>Heure</th>
+                        <th>Séance</th>
+                    </tr>
+                </thead>
+                <tbody id="presences-body"></tbody>
+            </table>
+        </div>
+        <div class="tab-pane fade" id="seances">
+            <h2>Gestion des Séances</h2>
+            <a href="{% url 'admin_lancer_seance' %}" class="btn btn-success mb-3">Lancer une nouvelle séance</a>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Cours</th>
+                        <th>Date</th>
+                        <th>Heure</th>
+                        <th>Salle</th>
+                        <th>Statut</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for seance in seances %}
+                        <tr>
+                            <td>{{ seance.cours.nom }}</td>
+                            <td>{{ seance.date }}</td>
+                            <td>{{ seance.heure_debut }}</td>
+                            <td>{{ seance.salle }}</td>
+                            <td>
+                                {% if seance.est_terminee %}
+                                    Terminée
+                                {% else %}
+                                    En cours
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if not seance.est_terminee %}
+                                    <button class="btn btn-danger btn-sm cloturer-seance" data-seance-id="{{ seance.id }}">Clôturer</button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="tab-pane fade" id="stats">
+            <h2>Statistiques</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <canvas id="presencesParCoursChart"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <canvas id="presencesParDateChart"></canvas>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <h3>Étudiants Absents à Répétition</h3>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Matricule</th>
+                                <th>Présences</th>
+                            </tr>
+                        </thead>
+                        <tbody id="absents-repetition"></tbody>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h3>Étudiants Assidus</h3>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Matricule</th>
+                                <th>Présences</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assidus"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% csrf_token %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/admin_dashboard.js' %}"></script>
+{% endblock %}
