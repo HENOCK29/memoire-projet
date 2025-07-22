@@ -1,10 +1,11 @@
-FROM python:3.10
+FROM python:3.11-slim
 
 # Installer les dépendances système nécessaires
 RUN apt-get update && apt-get install -y \
     pkg-config \
-    libmysqlclient-dev \
     default-libmysqlclient-dev \
+    libmariadb-dev-compat \
+    libmariadb-dev \
     build-essential \
     cmake \
     libpng-dev \
@@ -13,22 +14,20 @@ RUN apt-get update && apt-get install -y \
     liblapack-dev \
     libx11-dev \
     libgtk-3-dev \
-    && apt-get clean
+    && rm -rf /var/lib/apt/lists/*
 
 # Définir le dossier de travail
 WORKDIR /app
 
-# Copier les dépendances Python
+# Copier et installer les dépendances Python
 COPY requirements.txt .
-
-# Installer les dépendances Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copier le reste de l’application
+# Copier tout le reste de l'application
 COPY . .
 
-# Collecter les fichiers statiques (si applicable)
+# Collecter les fichiers statiques
 RUN python manage.py collectstatic --noinput
 
-# Commande de démarrage
+# Démarrer l'application : migration + serveur
 CMD ["sh", "-c", "python manage.py migrate && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT"]
