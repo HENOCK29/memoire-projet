@@ -97,12 +97,10 @@ WSGI_APPLICATION = "memoire_projet.wsgi.application"
 import dj_database_url
 import os
 
+# Base de données
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv(
-            'DATABASE_URL',
-            'mysql://root:PenuelOk21@localhost:3306/facial'  # fallback pour le dev local
-        ),
+        default='mysql://root:password@localhost:3306/memoire_db',
         conn_max_age=600,
         conn_health_checks=True,
     )
