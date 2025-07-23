@@ -99,14 +99,18 @@ WSGI_APPLICATION = "memoire_projet.wsgi.application"
 # Base de données
 import dj_database_url
 import os
+import pymysql
+
+pymysql.install_as_MySQLdb()  # Assure la compatibilité
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),  # La vraie URL complète ici
+        default=os.getenv('DATABASE_URL'),  # Prend l'URL Railway
         conn_max_age=600,
         conn_health_checks=True
     )
 }
+
 
 
 
