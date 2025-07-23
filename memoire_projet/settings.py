@@ -100,7 +100,6 @@ import os
 # Base de données
 DATABASES = {
     'default': dj_database_url.config(
-        default='mysql://root:password@localhost:3306/memoire_db',
         conn_max_age=600,
         conn_health_checks=True,
     )
