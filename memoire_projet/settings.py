@@ -28,7 +28,7 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 #ALLOWED_HOSTS = ['127.0.0.1', 'localhost', ' 192.168.1.74']
 ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ['https://*.railway.app', 'https://192.168.1.65:8000']
+CSRF_TRUSTED_ORIGINS = ['https://*.railway.app']
 
 # Application definition
 
@@ -94,15 +94,17 @@ WSGI_APPLICATION = "memoire_projet.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
+
+# Base de données
 import dj_database_url
 import os
 
-# Base de données
 DATABASES = {
     'default': dj_database_url.config(
+        default=os.getenv("DATABASE_URL"),  # La vraie URL complète ici
         conn_max_age=600,
-        conn_health_checks=True,
-        engine='django.db.backends.mysql',  # Spécifier explicitement le backend MySQL
+        conn_health_checks=True
     )
 }
 
